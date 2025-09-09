@@ -1,0 +1,4 @@
+// FunC file for testing
+int dns_test() {
+    return 42;
+}

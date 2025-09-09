@@ -1,8 +1,37 @@
 import type { Parser } from "@/grammar";
 import type { VirtualFileSystem } from "@/vfs/VirtualFileSystem";
 import { throwCompilationError } from "@/error/errors";
+import { throwImportNotFoundWithSuggestions } from "@/utils/errorSuggestions";
 import { resolveLibrary } from "@/imports/resolveLibrary";
+import { asString } from "@/imports/path";
 import type { Language, Source } from "@/imports/source";
+
+/**
+ * Calculate relative path from source file to target file
+ */
+function getRelativePath(fromPath: string, toPath: string, rootPath: string): string | null {
+    try {
+        // Remove root path from both paths
+        const from = fromPath.slice(rootPath.length);
+        const to = toPath.slice(rootPath.length);
+        
+        // Get directories
+        const fromDir = from.replace(/[^/]*$/, "");
+        const toFile = to;
+        
+        // If in same directory, return "./" + filename
+        if (fromDir === toFile.replace(/[^/]*$/, "")) {
+            const filename = toFile.split("/").pop();
+            return filename ? `./${filename}` : null;
+        }
+        
+        // For now, only suggest files in same directory
+        // Could extend to handle ../path later
+        return null;
+    } catch {
+        return null;
+    }
+}
 
 type ResolveImportsArgs = {
     readonly entrypoint: string;
@@ -34,9 +63,46 @@ export function resolveImports({
                 stdlib: stdlib,
             });
             if (!resolved.ok) {
-                throwCompilationError(
-                    `Could not resolve import in ${sourceFrom.path}`,
+                const importType = importPath.type === "stdlib" ? "stdlib" : "relative";
+                const importPathStr = importPath.type === "stdlib" 
+                    ? `@stdlib/${asString(importPath.path)}` 
+                    : asString(importPath.path);
+                
+                let availableFiles: string[] | undefined;
+                if (importType === "relative") {
+                    // For relative imports, try common file patterns
+                    const vfs = sourceFrom.origin === "stdlib" ? stdlib : project;
+                    const sourceDir = sourceFrom.path.slice(vfs.root.length).replace(/[^/]*$/, "");
+                    
+                    // Common file patterns to check (both .tact, .fc, .fif files)
+                    const commonPatterns = [
+                        "helper.tact", "helper.fc", "helper.fif",
+                        "utils.tact", "utils.fc", "utils.fif", 
+                        "common.tact", "common.fc", "common.fif",
+                        "lib.tact", "lib.fc", "lib.fif",
+                        "types.tact", "types.fc", "types.fif",
+                        "interfaces.tact", "interfaces.fc", "interfaces.fif",
+                        "stdlib.tact", "stdlib.fc", "stdlib.fif",
+                        "dns.tact", "dns.fc", "dns.fif"
+                    ];
+                    
+                    availableFiles = commonPatterns
+                        .filter(pattern => {
+                            try {
+                                const fullPath = vfs.resolve(sourceDir, pattern);
+                                return vfs.exists(fullPath);
+                            } catch {
+                                return false;
+                            }
+                        })
+                        .map(file => `./${file}`);
+                }
+                
+                throwImportNotFoundWithSuggestions(
+                    importPathStr,
+                    importType,
                     loc,
+                    availableFiles
                 );
             }
 

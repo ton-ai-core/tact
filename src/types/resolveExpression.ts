@@ -28,6 +28,7 @@ import { StructFunctions } from "@/abi/struct";
 import { prettyPrint } from "@/ast/ast-printer";
 import type { SrcInfo } from "@/grammar";
 import { ContractFunctions } from "@/abi/contracts";
+import { throwFunctionNotFoundWithSuggestions } from "@/utils/errorSuggestions";
 
 const store = createContextStore<{
     ast: Ast.Expression;
@@ -639,9 +640,13 @@ function resolveStaticCall(
             );
         }
 
-        throwCompilationError(
-            `Cannot find global function ${idTextErr(exp.function)}`,
-            exp.loc,
+        // Get available global functions for suggestions
+        const availableGlobalFunctions = Array.from(GlobalFunctions.keys());
+        throwFunctionNotFoundWithSuggestions(
+            idText(exp.function),
+            availableGlobalFunctions,
+            "Global function",
+            exp.loc
         );
     }
 
@@ -768,18 +773,36 @@ function resolveCall(
             );
         }
 
-        throwCompilationError(
-            `Type "${src.name}" does not have a function named ${idTextErr(exp.method)}`,
-            exp.loc,
+        // Get available functions for suggestions
+        const availableFunctions: string[] = [];
+        
+        // Add struct/contract ABI functions
+        if (srcT.kind === "struct") {
+            availableFunctions.push(...Array.from(StructFunctions.keys()));
+        } else if (srcT.kind === "contract") {
+            availableFunctions.push(...Array.from(ContractFunctions.keys()));
+        }
+        
+        // Add user-defined functions
+        availableFunctions.push(...Array.from(srcT.functions.keys()));
+        
+        throwFunctionNotFoundWithSuggestions(
+            idText(exp.method),
+            availableFunctions,
+            `Function in type "${src.name}"`,
+            exp.loc
         );
     }
 
     // Handle map
     if (src.kind === "map") {
         if (!MapFunctions.has(idText(exp.method))) {
-            throwCompilationError(
-                `Map function ${idTextErr(exp.method)} not found`,
-                exp.loc,
+            const availableMapFunctions = Array.from(MapFunctions.keys());
+            throwFunctionNotFoundWithSuggestions(
+                idText(exp.method),
+                availableMapFunctions,
+                "Map function",
+                exp.loc
             );
         }
         const abf = MapFunctions.get(idText(exp.method))!;

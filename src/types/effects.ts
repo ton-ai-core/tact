@@ -3,6 +3,7 @@ import { idText, isSelfId, tryExtractPath } from "@/ast/ast-helpers";
 import type { CompilerContext } from "@/context/context";
 import { getAllTypes, getType } from "@/types/resolveDescriptors";
 import { idTextErr, throwInternalCompilerError } from "@/error/errors";
+import { throwMethodNotFoundWithSuggestions } from "@/utils/errorSuggestions";
 import { getExpType } from "@/types/resolveExpression";
 import { StructFunctions } from "@/abi/struct";
 import { ContractFunctions } from "@/abi/contracts";
@@ -310,9 +311,12 @@ function methodEffects(
 
             const methodDescr = selfType.functions.get(idText(method));
             if (typeof methodDescr === "undefined") {
-                throwInternalCompilerError(
-                    `Method ${idTextErr(method)} not found in contract ${selfTypeRef.name}`,
-                    method.loc,
+                const availableMethods = Array.from(selfType.functions.keys());
+                throwMethodNotFoundWithSuggestions(
+                    idTextErr(method),
+                    availableMethods,
+                    `contract ${selfTypeRef.name}`,
+                    method.loc
                 );
             }
             switch (methodDescr.ast.kind) {
@@ -400,9 +404,12 @@ function methodEffects(
 
                 const methodDescr = selfType.functions.get(idText(method));
                 if (typeof methodDescr === "undefined") {
-                    throwInternalCompilerError(
-                        `Method ${idTextErr(method)} not found in type ${selfTypeRef.name}`,
-                        method.loc,
+                    const availableMethods = Array.from(selfType.functions.keys());
+                    throwMethodNotFoundWithSuggestions(
+                        idTextErr(method),
+                        availableMethods,
+                        selfTypeRef.name,
+                        method.loc
                     );
                 }
                 return methodDescr.isMutating

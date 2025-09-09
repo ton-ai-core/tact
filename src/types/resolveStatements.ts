@@ -13,6 +13,7 @@ import {
     throwCompilationError,
     throwInternalCompilerError,
 } from "@/error/errors";
+import { throwFieldNotFoundWithSuggestions } from "@/utils/errorSuggestions";
 import {
     getAllStaticFunctions,
     getStaticConstant,
@@ -22,8 +23,7 @@ import {
     getAllTypes,
 } from "@/types/resolveDescriptors";
 import { getExpType, resolveExpression } from "@/types/resolveExpression";
-import type { FunctionDescription, TypeRef } from "@/types/types";
-import { printTypeRef } from "@/types/types";
+import { printTypeRef, type FunctionDescription, type TypeRef } from "@/types/types";
 import type { SrcInfo } from "@/grammar";
 
 export type StatementContext = {
@@ -732,9 +732,15 @@ function processStatements(
                 s.identifiers.forEach(([field, name], _) => {
                     const f = ty.fields.find((f) => eqNames(f.name, field));
                     if (!f) {
-                        throwCompilationError(
-                            `Field '${idTextErr(field)}' not found in type '${expressionType.name}'`,
-                            field.loc,
+                        const availableFields = ty.fields.map(f => ({
+                            name: f.name,
+                            type: printTypeRef(f.type)
+                        }));
+                        throwFieldNotFoundWithSuggestions(
+                            field.text,
+                            availableFields,
+                            expressionType.name,
+                            field.loc
                         );
                     }
                     if (name.kind === "id") {

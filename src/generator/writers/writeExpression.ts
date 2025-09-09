@@ -4,6 +4,7 @@ import {
     throwCompilationError,
     throwInternalCompilerError,
 } from "@/error/errors";
+import { throwFunctionNotFoundWithSuggestions } from "@/utils/errorSuggestions";
 import type * as Ast from "@/ast/ast";
 import { getExpType } from "@/types/resolveExpression";
 import {
@@ -730,9 +731,12 @@ const writeMethodCall =
         // Map types
         if (selfTyRef.kind === "map") {
             if (!MapFunctions.has(idText(f.method))) {
-                throwCompilationError(
-                    `Map function "${idText(f.method)}" not found`,
-                    f.loc,
+                const availableMapFunctions = Array.from(MapFunctions.keys());
+                throwFunctionNotFoundWithSuggestions(
+                    idText(f.method),
+                    availableMapFunctions,
+                    "Map function",
+                    f.loc
                 );
             }
             const abf = MapFunctions.get(idText(f.method))!;
