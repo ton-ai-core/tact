@@ -2,6 +2,24 @@ import { findSimilarFunctions } from "@/utils/similarity";
 import { throwCompilationError } from "@/error/errors";
 import type { SrcInfo } from "@/grammar";
 import { files } from "@/stdlib/stdlib";
+import { 
+    getMapFunctionSignatures,
+    getGlobalFunctionSignatures
+} from "@/utils/functionSignatures";
+
+/**
+ * Get function signatures map based on function type
+ */
+function getFunctionSignaturesMap(functionType: string): Map<string, string> {
+    switch (functionType.toLowerCase()) {
+        case "map function":
+            return getMapFunctionSignatures();
+        case "global function":
+            return getGlobalFunctionSignatures();
+        default:
+            return new Map();
+    }
+}
 
 
 /**
@@ -20,7 +38,11 @@ export function throwFunctionNotFoundWithSuggestions(
     const suggestions = findSimilarFunctions(unknownFunction, availableFunctions);
     
     if (suggestions.length > 0) {
-        const suggestionText = suggestions.map(s => `  - ${s.name}`).join('\n');
+        const signaturesMap = getFunctionSignaturesMap(functionType);
+        const suggestionText = suggestions.map(s => {
+            const signature = signaturesMap.get(s.name);
+            return signature ? `  - ${signature}` : `  - ${s.name}`;
+        }).join('\n');
         
         throwCompilationError(
             `${functionType} "${unknownFunction}" not found. Did you mean:\n${suggestionText}`,

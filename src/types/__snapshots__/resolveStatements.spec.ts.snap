@@ -475,7 +475,7 @@ exports[`resolveStatements should fail statements for expr-map-exists-method-not
 `;
 
 exports[`resolveStatements should fail statements for expr-map-exists-method-on-not-map 1`] = `
-"<unknown>:5:12: Type "Int" does not have a function named "exists"
+"<unknown>:5:12: Function in type "Int" "exists" not found
   4 | fun test(): Bool {
 > 5 |     return 42.exists(1);
                  ^~~~~~~~~~~~
@@ -1216,7 +1216,7 @@ exports[`resolveStatements should fail statements for stmt-destructuring-fields-
 `;
 
 exports[`resolveStatements should fail statements for stmt-destructuring-fields-non-existing 1`] = `
-"<unknown>:15:19: Field '"d"' not found in type 'S'
+"<unknown>:15:19: Field 'd' not found in type 'S'
   14 |     let s = S{ a: 1, b: 2, c: 3 };
 > 15 |     let S { a, b, d: e } = s;
                          ^
@@ -1225,7 +1225,8 @@ exports[`resolveStatements should fail statements for stmt-destructuring-fields-
 `;
 
 exports[`resolveStatements should fail statements for stmt-destructuring-fields-non-existing-punned 1`] = `
-"<unknown>:15:16: Field '"bb"' not found in type 'S'
+"<unknown>:15:16: Field 'bb' not found in type 'S'. Did you mean:
+  - b: Int
   14 |     let s = S{ a: 1, b: 2, c: 3 };
 > 15 |     let S { a, bb, c } = s;
                       ^~
@@ -1234,7 +1235,7 @@ exports[`resolveStatements should fail statements for stmt-destructuring-fields-
 `;
 
 exports[`resolveStatements should fail statements for stmt-destructuring-fields-non-existing-punned2 1`] = `
-"<unknown>:15:19: Field '"d"' not found in type 'S'
+"<unknown>:15:19: Field 'd' not found in type 'S'
   14 |     let s = S{ a: 1, b: 2, c: 3 };
 > 15 |     let S { a, b, d } = s;
                          ^
@@ -1864,7 +1865,8 @@ exports[`resolveStatements should fail statements for var-scope-nested-block-sta
 `;
 
 exports[`resolveStatements should fail statements for var-scope-no-toString-global-fun1 1`] = `
-"<unknown>:7:9: Cannot find global function "toString"
+"<unknown>:7:9: Global function "toString" not found. Did you mean:
+  - ton
   6 |     init() {
 > 7 |         toString(); // non-existent function
               ^~~~~~~~~~
@@ -1882,7 +1884,7 @@ exports[`resolveStatements should fail statements for var-scope-no-toString-glob
 `;
 
 exports[`resolveStatements should fail statements for var-scope-no-valueOf-global-fun 1`] = `
-"<unknown>:4:5: Cannot find global function "valueOf"
+"<unknown>:4:5: Global function "valueOf" not found
   3 | fun foo(x: Int) {
 > 4 |     valueOf(x);
           ^~~~~~~~~~
