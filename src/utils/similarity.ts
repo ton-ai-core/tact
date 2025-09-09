@@ -111,7 +111,7 @@ export function findSimilarFunctions(
     availableFunctions: string[],
     minScore: number = 0.3,
     maxSuggestions: number = 3
-): Array<{ name: string; score: number }> {
+): { name: string; score: number }[] {
     const suggestions = availableFunctions
         .map(funcName => ({
             name: funcName,

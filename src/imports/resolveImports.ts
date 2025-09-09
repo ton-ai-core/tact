@@ -9,7 +9,7 @@ import type { Language, Source } from "@/imports/source";
 /**
  * Calculate relative path from source file to target file
  */
-function getRelativePath(fromPath: string, toPath: string, rootPath: string): string | null {
+function _getRelativePath(fromPath: string, toPath: string, rootPath: string): string | null {
     try {
         // Remove root path from both paths
         const from = fromPath.slice(rootPath.length);

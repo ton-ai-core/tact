@@ -1,28 +1,8 @@
-import { findSimilarFunctions } from "./similarity";
+import { findSimilarFunctions } from "@/utils/similarity";
 import { throwCompilationError } from "@/error/errors";
 import type { SrcInfo } from "@/grammar";
 import { files } from "@/stdlib/stdlib";
-import { 
-    getFunctionSignature,
-    getMapFunctionSignatures,
-    getGlobalFunctionSignatures,
-    getMapFunctionNames,
-    getGlobalFunctionNames
-} from "./functionSignatures";
 
-/**
- * Get function signatures map based on function type
- */
-function getFunctionSignaturesMap(functionType: string): Map<string, string> {
-    switch (functionType.toLowerCase()) {
-        case "map function":
-            return getMapFunctionSignatures();
-        case "global function":
-            return getGlobalFunctionSignatures();
-        default:
-            return new Map();
-    }
-}
 
 /**
  * Throw a compilation error with function suggestions when a function is not found
@@ -40,11 +20,7 @@ export function throwFunctionNotFoundWithSuggestions(
     const suggestions = findSimilarFunctions(unknownFunction, availableFunctions);
     
     if (suggestions.length > 0) {
-        const signaturesMap = getFunctionSignaturesMap(functionType);
-        const suggestionText = suggestions.map(s => {
-            const signature = signaturesMap.get(s.name);
-            return signature ? `  - ${signature}` : `  - ${s.name}`;
-        }).join('\n');
+        const suggestionText = suggestions.map(s => `  - ${s.name}`).join('\n');
         
         throwCompilationError(
             `${functionType} "${unknownFunction}" not found. Did you mean:\n${suggestionText}`,
@@ -67,7 +43,7 @@ export function throwFunctionNotFoundWithSuggestions(
  */
 export function throwFieldNotFoundWithSuggestions(
     unknownField: string,
-    availableFields: Array<{name: string, type: string}>,
+    availableFields: {name: string; type: string}[],
     typeName: string,
     location: SrcInfo
 ): never {

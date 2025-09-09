@@ -6,7 +6,7 @@ import {
     jaroWinkler, 
     splitIdentifier, 
     normalize 
-} from "./similarity";
+} from "@/utils/similarity";
 
 describe('Similarity algorithm tests', () => {
     describe('Core algorithms', () => {
@@ -75,7 +75,7 @@ describe('Similarity algorithm tests', () => {
         });
 
         it('should be bounded in [0,1]', () => {
-            const testCases: Array<[string, string]> = [
+            const testCases: [string, string][] = [
                 ['readFil', 'readFile'],
                 ['x', 'xxxxxxxxxxxxxxxx'],
                 ['ABC', 'ABC'],
