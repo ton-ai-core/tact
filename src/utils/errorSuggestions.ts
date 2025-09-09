@@ -5,9 +5,7 @@ import { files } from "@/stdlib/stdlib";
 import { 
     getFunctionSignature,
     getMapFunctionSignatures,
-    getGlobalFunctionSignatures,
-    getStructFunctionSignatures,
-    getContractFunctionSignatures
+    getGlobalFunctionSignatures
 } from "./functionSignatures";
 
 /**
@@ -19,12 +17,6 @@ function getFunctionSignaturesMap(functionType: string): Map<string, string> {
             return getMapFunctionSignatures();
         case "global function":
             return getGlobalFunctionSignatures();
-        case "struct":
-        case "struct function":
-            return getStructFunctionSignatures();
-        case "contract":
-        case "contract function":
-            return getContractFunctionSignatures();
         default:
             return new Map();
     }
