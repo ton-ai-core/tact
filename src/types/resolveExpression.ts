@@ -29,6 +29,7 @@ import { prettyPrint } from "@/ast/ast-printer";
 import type { SrcInfo } from "@/grammar";
 import { ContractFunctions } from "@/abi/contracts";
 import { throwFunctionNotFoundWithSuggestions } from "@/utils/errorSuggestions";
+import { getMapFunctionNames, getGlobalFunctionNames } from "@/utils/functionSignatures";
 
 const store = createContextStore<{
     ast: Ast.Expression;
@@ -641,7 +642,7 @@ function resolveStaticCall(
         }
 
         // Get available global functions for suggestions
-        const availableGlobalFunctions = Array.from(GlobalFunctions.keys());
+        const availableGlobalFunctions = getGlobalFunctionNames();
         throwFunctionNotFoundWithSuggestions(
             idText(exp.function),
             availableGlobalFunctions,
@@ -797,7 +798,7 @@ function resolveCall(
     // Handle map
     if (src.kind === "map") {
         if (!MapFunctions.has(idText(exp.method))) {
-            const availableMapFunctions = Array.from(MapFunctions.keys());
+            const availableMapFunctions = getMapFunctionNames();
             throwFunctionNotFoundWithSuggestions(
                 idText(exp.method),
                 availableMapFunctions,

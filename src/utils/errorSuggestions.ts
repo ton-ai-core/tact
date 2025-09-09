@@ -5,7 +5,9 @@ import { files } from "@/stdlib/stdlib";
 import { 
     getFunctionSignature,
     getMapFunctionSignatures,
-    getGlobalFunctionSignatures
+    getGlobalFunctionSignatures,
+    getMapFunctionNames,
+    getGlobalFunctionNames
 } from "./functionSignatures";
 
 /**
